@@ -1,149 +1,130 @@
 ```mermaid
-@startuml WordHunt_UML
+classDiagram
+    direction TB
 
-skinparam classAttributeIconSize 0
-skinparam classFontSize 14
-skinparam classAttributeFontSize 12
-skinparam classFontStyle bold
-skinparam defaultFontName "Segoe UI"
-skinparam shadowing false
-skinparam linetype ortho
+    class Application {
+        <<JavaFX>>
+    }
 
-skinparam class {
-  BackgroundColor White
-  BorderColor #333333
-  ArrowColor #333333
-}
+    class Thread {
+        <<Java>>
+    }
 
-' ===== LEFT COLUMN: Client side =====
+    class Client {
+        ~ socketClient : Socket
+        ~ host : String
+        ~ port : int
+        ~ out : ObjectOutputStream
+        ~ in : ObjectInputStream
+        - callback : Consumer~Serializable~
+        + run() void
+        + send(data : String) void
+        ~ Client(call : Consumer~Serializable~, host : String, port : int)
+    }
 
-class Thread << (T,white) >> {
-}
+    class Server {
+        ~ count : int
+        ~ clientArray : ArrayList~ClientThread~
+        ~ server : TheServer
+        - callback : Consumer~Serializable~
+        ~ wordLists : HashMap~String, ArrayList~String~~
+        ~ clientsDisconnected : ArrayList~Boolean~
+        ~ portNumber : int
+        ~ Server(call : Consumer~Serializable~, input : int)
+    }
 
-class Client extends Thread {
-  ~ socketClient : Socket
-  ~ host : String
-  ~ port : int
-  ~ out : ObjectOutputStream
-  ~ in : ObjectInputStream
-  - callback : Consumer<Serializable>
-  --
-  + run() : void
-  + send(data : String) : void
-  ~ Client(call : Consumer<Serializable>,\n    host : String, port : int)
-}
+    class TheServer {
+        <<inner class>>
+        + run() void
+    }
 
-class ClientApp extends Application {
-  ~ stage : Stage
-  ~ clientConnection : Client
-  ~ attemptsPerCategory : HashMap<Integer, Integer>
-  ~ listViewHistory : ListView<Object>
-  ~ portInput : TextField
-  ~ hostInput : TextField
-  ~ guessInput : TextField
-  ~ connectButton : Button
-  ~ sendButton : Button
-  ~ playAgain : Button
-  ~ title : Text
-  ~ hostText : Text
-  ~ portText : Text
-  ~ pickACategory : Text
-  ~ cat1 : Button
-  ~ cat2 : Button
-  ~ cat3 : Button
-  ~ howToPlay : Button
-  ~ quit : Button
-  ~ returnButton : Button
-  ~ selectedCategory : int
-  ~ dataHistory : ArrayList<String>
-  - pauseFiveSeconds : PauseTransition
-  ~ afterGameText : Text
-  ~ serverResponse : String <<volatile>>
-  ~ isWinner : Boolean
-  ~ guessesMade : ArrayList<String>
-  ~ gameOver : boolean
-  ~ roundOver : boolean
-  --
-  + {static} main(args : String[]) : void
-  + start(primaryStage : Stage) : void
-  + createMainMenuScene() : Scene
-  + createCategoryScene() : Scene
-  + createHowToPlayScene() : Scene
-  + createGameScene() : Scene
-  + createWinScene() : Scene
-}
+    class ClientThread {
+        <<inner class>>
+        ~ connection : Socket
+        ~ count : int
+        ~ letterGuessesLeft : int
+        ~ currentCategory : int
+        ~ wordsWrong : int
+        ~ in : ObjectInputStream
+        ~ out : ObjectOutputStream
+        ~ currentWord : String
+        ~ rand : Random
+        ~ lettersGuessed : ArrayList~Boolean~
+        ~ wordGuessedInCat : ArrayList~Boolean~
+        ~ disconnected : boolean
+        ~ wordsUsed : ArrayList~String~
+        ~ attemptsPerCategory : HashMap~Integer, Integer~
+        ~ ClientThread(s : Socket, count : int)
+        + run() void
+        + wordGuessed() boolean
+        + gameWin() boolean
+        + categoryActions(input : String) void
+    }
 
-' ===== RIGHT COLUMN: Server side =====
+    class ServerApp {
+        ~ stage : Stage
+        ~ startServer : Button
+        ~ portInput : TextField
+        ~ portText : Text
+        ~ log : ListView~String~
+        ~ serverConnection : Server
+        ~ portNumber : int
+        + main(args : String[]) void$
+        + start(primaryStage : Stage) void
+        + createStartScene() Scene
+        + createLogScene() Scene
+    }
 
-class Server {
-  ~ count : int
-  ~ portNumber : int
-  ~ clientArray : ArrayList<ClientThread>
-  ~ server : TheServer
-  - callback : Consumer<Serializable>
-  ~ wordLists : HashMap<String, ArrayList<String>>
-  ~ clientsDisconnected : ArrayList<Boolean>
-  --
-  ~ Server(call : Consumer<Serializable>, input : int)
-}
+    class ClientApp {
+        ~ stage : Stage
+        ~ clientConnection : Client
+        ~ attemptsPerCategory : HashMap~Integer, Integer~
+        ~ listViewHistory : ListView~Object~
+        ~ portInput : TextField
+        ~ hostInput : TextField
+        ~ guessInput : TextField
+        ~ connectButton : Button
+        ~ sendButton : Button
+        ~ playAgain : Button
+        ~ title : Text
+        ~ hostText : Text
+        ~ portText : Text
+        ~ pickACategory : Text
+        ~ uniqueCategoriesWon : Text
+        ~ wrongAttemptsRemaining : Text
+        ~ cat1 : Button
+        ~ cat2 : Button
+        ~ cat3 : Button
+        ~ howToPlay : Button
+        ~ quit : Button
+        ~ returnButton : Button
+        ~ selectedCategory : int
+        ~ dataHistory : ArrayList~String~
+        - pauseFiveSeconds : PauseTransition
+        ~ afterGameText : Text
+        ~ serverResponse : String «volatile»
+        ~ isWinner : Boolean
+        ~ guessesMade : ArrayList~String~
+        ~ gameOver : boolean
+        ~ roundOver : boolean
+        + main(args : String[]) void$
+        + start(primaryStage : Stage) void
+        + createMainMenuScene() Scene
+        + createCategoryScene() Scene
+        + createHowToPlayScene() Scene
+        + createGameScene() Scene
+        + createWinScene() Scene
+    }
 
-class Server.TheServer extends Thread {
-  <<inner class>>
-  --
-  + run() : void
-}
+    Thread <|-- Client : extends
+    Thread <|-- TheServer : extends
+    Thread <|-- ClientThread : extends
+    Application <|-- ServerApp : extends
+    Application <|-- ClientApp : extends
 
-class Server.ClientThread extends Thread {
-  <<inner class>>
-  ~ connection : Socket
-  ~ count : int
-  ~ letterGuessesLeft : int
-  ~ currentCategory : int
-  ~ wordsWrong : int
-  ~ in : ObjectInputStream
-  ~ out : ObjectOutputStream
-  ~ currentWord : String
-  ~ rand : Random
-  ~ lettersGuessed : ArrayList<Boolean>
-  ~ wordGuessedInCat : ArrayList<Boolean>
-  ~ disconnected : boolean
-  ~ wordsUsed : ArrayList<String>
-  ~ attemptsPerCategory : HashMap<Integer, Integer>
-  --
-  ~ ClientThread(s : Socket, count : int)
-  + run() : void
-  + wordGuessed() : boolean
-  + gameWin() : boolean
-  + categoryActions(input : String) : void
-}
+    Server *-- TheServer : inner class
+    Server *-- ClientThread : inner class
 
-class ServerApp extends Application {
-  ~ stage : Stage
-  ~ startServer : Button
-  ~ portInput : TextField
-  ~ portText : Text
-  ~ log : ListView<String>
-  ~ serverConnection : Server
-  ~ portNumber : int
-  --
-  + {static} main(args : String[]) : void
-  + start(primaryStage : Stage) : void
-  + createStartScene() : Scene
-  + createLogScene() : Scene
-}
-
-abstract class Application {
-}
-
-' ===== RELATIONSHIPS =====
-
-' Composition: GUI classes own their networking classes
-ClientApp *-- Client : clientConnection
-ServerApp *-- Server : serverConnection
-
-' Composition: Server owns its inner classes
-Server *-- Server.TheServer : server
-Server *-- Server.ClientThread : clientArray
-
-@enduml
+    ServerApp *-- Server : serverConnection
+    ClientApp *-- Client : clientConnection
 ```
