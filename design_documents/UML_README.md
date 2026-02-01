@@ -1,13 +1,21 @@
 ```mermaid
 classDiagram
-    direction TB
+    direction LR
 
-    class Application {
+    class Thread_Client {
+        <<Java>>
+    }
+    class Thread_TheServer {
+        <<Java>>
+    }
+    class Thread_ClientThread {
+        <<Java>>
+    }
+    class Application_Client {
         <<JavaFX>>
     }
-
-    class Thread {
-        <<Java>>
+    class Application_Server {
+        <<JavaFX>>
     }
 
     class Client {
@@ -20,6 +28,47 @@ classDiagram
         + run() void
         + send(data : String) void
         ~ Client(call : Consumer~Serializable~, host : String, port : int)
+    }
+
+    class ClientApp {
+        ~ stage : Stage
+        ~ clientConnection : Client
+        ~ attemptsPerCategory : HashMap~Integer, Integer~
+        ~ listViewHistory : ListView~Object~
+        ~ portInput : TextField
+        ~ hostInput : TextField
+        ~ guessInput : TextField
+        ~ connectButton : Button
+        ~ sendButton : Button
+        ~ playAgain : Button
+        ~ title : Text
+        ~ hostText : Text
+        ~ portText : Text
+        ~ pickACategory : Text
+        ~ uniqueCategoriesWon : Text
+        ~ wrongAttemptsRemaining : Text
+        ~ cat1 : Button
+        ~ cat2 : Button
+        ~ cat3 : Button
+        ~ howToPlay : Button
+        ~ quit : Button
+        ~ returnButton : Button
+        ~ selectedCategory : int
+        ~ dataHistory : ArrayList~String~
+        - pauseFiveSeconds : PauseTransition
+        ~ afterGameText : Text
+        ~ serverResponse : String «volatile»
+        ~ isWinner : Boolean
+        ~ guessesMade : ArrayList~String~
+        ~ gameOver : boolean
+        ~ roundOver : boolean
+        + main(args : String[]) void$
+        + start(primaryStage : Stage) void
+        + createMainMenuScene() Scene
+        + createCategoryScene() Scene
+        + createHowToPlayScene() Scene
+        + createGameScene() Scene
+        + createWinScene() Scene
     }
 
     class Server {
@@ -75,56 +124,15 @@ classDiagram
         + createLogScene() Scene
     }
 
-    class ClientApp {
-        ~ stage : Stage
-        ~ clientConnection : Client
-        ~ attemptsPerCategory : HashMap~Integer, Integer~
-        ~ listViewHistory : ListView~Object~
-        ~ portInput : TextField
-        ~ hostInput : TextField
-        ~ guessInput : TextField
-        ~ connectButton : Button
-        ~ sendButton : Button
-        ~ playAgain : Button
-        ~ title : Text
-        ~ hostText : Text
-        ~ portText : Text
-        ~ pickACategory : Text
-        ~ uniqueCategoriesWon : Text
-        ~ wrongAttemptsRemaining : Text
-        ~ cat1 : Button
-        ~ cat2 : Button
-        ~ cat3 : Button
-        ~ howToPlay : Button
-        ~ quit : Button
-        ~ returnButton : Button
-        ~ selectedCategory : int
-        ~ dataHistory : ArrayList~String~
-        - pauseFiveSeconds : PauseTransition
-        ~ afterGameText : Text
-        ~ serverResponse : String «volatile»
-        ~ isWinner : Boolean
-        ~ guessesMade : ArrayList~String~
-        ~ gameOver : boolean
-        ~ roundOver : boolean
-        + main(args : String[]) void$
-        + start(primaryStage : Stage) void
-        + createMainMenuScene() Scene
-        + createCategoryScene() Scene
-        + createHowToPlayScene() Scene
-        + createGameScene() Scene
-        + createWinScene() Scene
-    }
-
-    Thread <|-- Client : extends
-    Thread <|-- TheServer : extends
-    Thread <|-- ClientThread : extends
-    Application <|-- ServerApp : extends
-    Application <|-- ClientApp : extends
+    Thread_Client <|-- Client : extends
+    Thread_TheServer <|-- TheServer : extends
+    Thread_ClientThread <|-- ClientThread : extends
+    Application_Client <|-- ClientApp : extends
+    Application_Server <|-- ServerApp : extends
 
     Server *-- TheServer : inner class
     Server *-- ClientThread : inner class
 
-    ServerApp *-- Server : serverConnection
     ClientApp *-- Client : clientConnection
+    ServerApp *-- Server : serverConnection
 ```
